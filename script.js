@@ -3,26 +3,24 @@ const stage = document.getElementById('stage');
 const card = document.getElementById('instruction');
 const toast = document.getElementById('toast');
 const hint = document.getElementById('hint');
-const sound = document.getElementById('sound');
 
 let scene = 0;
 let pass = '';
-let audio = false;
 let advancing = false;
 
 const name = 'YOU';
 const birthdayCode = '30072008';
 const acceptedCodes = new Set([birthdayCode, '300708', '3007']);
 const copy = [
-  'Slowly pull the drifting crate into the glowing shore circle.',
+  'Let the crate breathe with the tide, then slowly pull it into the glowing shore circle.',
   'Tap the brass latch.',
   'Drag to rotate and inspect the chest, then tap it open.',
   'Enter 30-07-2008 as 30072008. Use delete if you mistype.',
   'Peel the wax seal from the velvet envelope.',
   'Drag downward to unfold the handwritten letter.',
   'Tap the paper crane and follow its flight.',
-  'Tap the boy until he leaves the panel.',
-  `Watch the stars gather into HAPPY BIRTHDAY, ${name}.`,
+  'Tap anywhere in the panel and let the distance grow slowly.',
+  `Watch the sky write what the heart was trying to say: HAPPY BIRTHDAY, ${name}.`,
 ];
 
 function say(text) {
@@ -45,6 +43,7 @@ function clearScene() {
   root.className = '';
   stage.className = 'stage';
   stage.style.background = '';
+  stage.onclick = null;
   advancing = false;
 }
 
@@ -85,8 +84,8 @@ function ocean() {
     crate.classList.add('settling');
     crate.style.transform = 'translate3d(-118px, 62px, 0) rotate(-3deg)';
     target.classList.add('complete');
-    say('The tide lets go.');
-    next(1200);
+    say('The tide lets go, like it was waiting for you.');
+    next(1700);
   }
 
   crate.addEventListener('pointerdown', (event) => {
@@ -130,7 +129,7 @@ function latch() {
   chest.onclick = () => {
     chest.classList.add('open');
     flash();
-    next(900);
+    next(1200);
   };
 }
 
@@ -154,7 +153,7 @@ function inspect() {
     if (Math.abs(rotation) > 8 && !opened) {
       opened = true;
       chest.classList.add('open');
-      next(800);
+      next(1200);
     } else {
       say('Let the chest catch the moonlight first.');
     }
@@ -178,7 +177,7 @@ function safe() {
       typed.classList.remove('error');
       flash();
       say('The old lock remembers the date.');
-      next(850);
+      next(1300);
     } else if (pass.length >= 8) {
       say('Use 30072008 for 30-07-2008. Tap delete to fix it.');
     }
@@ -197,7 +196,6 @@ function safe() {
       } else if (pass.length < 8) {
         pass += key;
       }
-      tone();
       update();
       submitIfReady();
     };
@@ -224,13 +222,13 @@ function seal() {
     if (Math.hypot(dx, dy) > 90) {
       sealNode.style.transition = 'transform .6s ease';
       sealNode.style.transform = 'translate(120px,-90px) rotate(35deg) scale(.65)';
-      next(700);
+      next(1100);
     }
   });
 }
 
 function letter() {
-  const note = make('div', 'obj letter', 'Dear you,<br><br>May this year unfold like a secret page: quietly, bravely, and full of impossible light.');
+  const note = make('div', 'obj letter', 'Dear you,<br><br>I saved the softest light for you. May this year find you gently, keep you brave, and remind you that you are loved in the quiet details too.');
   let startY = 0;
   note.addEventListener('pointerdown', (event) => {
     note.setPointerCapture(event.pointerId);
@@ -240,7 +238,7 @@ function letter() {
     if (!note.hasPointerCapture(event.pointerId)) return;
     const dy = Math.max(0, event.clientY - startY);
     note.style.transform = `translate(-50%, ${dy * 0.55}px) scaleY(${1 + dy / 520})`;
-    if (dy > 115) next(800);
+    if (dy > 115) next(1250);
   });
 }
 
@@ -249,7 +247,7 @@ function crane() {
   bird.onclick = () => {
     bird.style.transition = 'transform 1.8s cubic-bezier(.2,.9,.2,1)';
     bird.style.transform = 'translate(120px,-360px) rotate(28deg)';
-    next(1400);
+    next(1900);
   };
 }
 
@@ -258,24 +256,26 @@ function duo() {
   make('div', 'ground');
   make('div', 'person girl', '<i></i>');
   const boy = make('div', 'person boy');
-  const tap = make('div', 'tap');
+  make('div', 'tap');
   const bouquet = make('div', 'bouquet');
   make('div', 'grenade');
   make('div', 'boom');
   let taps = 0;
   function advance() {
     taps += 1;
-    boy.style.transform = `translateX(${taps * 58}px) rotate(${taps * 3}deg)`;
-    if (taps === 1) say('The panel stretches with the silence.');
-    if (taps >= 4) {
+    boy.style.transform = `translateX(${taps * 46}px) rotate(${taps * 2}deg)`;
+    if (taps === 1) say('Some people leave the frame. The feeling stays.');
+    if (taps >= 5) {
       root.classList.add('throw');
-      setTimeout(() => root.classList.add('explode'), 1000);
-      setTimeout(() => bouquet.classList.add('show'), 1550);
-      next(3000);
+      setTimeout(() => root.classList.add('explode'), 1300);
+      setTimeout(() => bouquet.classList.add('show'), 2100);
+      next(4300);
     }
   }
-  boy.onclick = advance;
-  tap.onclick = advance;
+  stage.onclick = (event) => {
+    if (event.target.closest('.hud') || event.target.closest('[data-msg]')) return;
+    advance();
+  };
 }
 
 function stars() {
@@ -296,29 +296,11 @@ function flash() {
   stage.animate([{ filter: 'brightness(1)' }, { filter: 'brightness(1.7)' }, { filter: 'brightness(1)' }], { duration: 620, easing: 'ease-out' });
 }
 
-function tone() {
-  if (!audio) return;
-  const context = new AudioContext();
-  const oscillator = context.createOscillator();
-  const gain = context.createGain();
-  oscillator.frequency.value = 220;
-  gain.gain.setValueAtTime(0.04, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.12);
-  oscillator.connect(gain).connect(context.destination);
-  oscillator.start();
-  oscillator.stop(context.currentTime + 0.13);
-}
-
 document.addEventListener('click', (event) => {
   const egg = event.target.closest('[data-msg]');
   if (egg) say(egg.dataset.msg);
 });
 
 hint.onclick = () => say(copy[scene]);
-sound.onclick = (event) => {
-  audio = !audio;
-  event.target.textContent = `sound: ${audio ? 'on' : 'off'}`;
-  tone();
-};
 
 render();
