@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Manga Birthday Chapter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="stage" id="stage" aria-live="polite">
+    <div class="paper"></div>
+    <div class="camera">
+      <div class="moon"></div><div class="cloud one"></div><div class="cloud two"></div>
+      <div class="sea"><i></i><i></i><b></b><b></b></div><div class="shore"></div>
+      <button class="egg boat" data-msg="A tiny paper boat rocks toward tomorrow." aria-label="paper boat"></button>
+      <button class="egg cat" data-msg="A shy cat watches from the panel edge." aria-label="cat silhouette"></button>
+      <div id="root"></div>
+    </div>
+    <aside id="instruction" class="instruction">Pull the drifting crate toward the shore.</aside>
+    <nav class="hud"><button id="sound">sound: off</button><button id="hint">hint</button></nav>
+    <output id="toast" class="toast"></output>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
